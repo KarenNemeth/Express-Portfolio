@@ -3,6 +3,11 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const path = require('path');
+// const description = require('/description.json');
+const hb = require('express-handlebars');
+const fs = require('fs');
+app.engine('handlebars', hb());
+app.set('view engine', 'handlebars');
 var url;
 
 console.log("I'm listening!");
@@ -40,10 +45,64 @@ app.get('*', function(req, res, next){
     }
 });
 
-app.use(express.static(path.join(__dirname, 'Projects')));
+var projectsURL = path.join(__dirname, 'Projects');
+var projectsAvailable = fs.readdirSync(projectsURL);
+var projects = [];
+projectsAvailable.filter(function(file){
+    return file[0] != ".";
+}).filter(function(file){
+    return path.extname(file) == '';
+}).forEach(function(projectDir){
+    var projectName = projectDir.replace(/-/g, " ");
+    var project = {
+        "name": projectName,
+        "screenshot": ('/'+projectDir+'/screenshot.jpg'),
+        "link": ('/projects/'+projectDir+'/description')
+    };
+    projects.push(project);
+});
+app.use(express.static(projectsURL));
+
 app.get('/', function(req, res){
-    console.log('home');
-    res.send("<div><h1>Hello World!</h1></div>");
+    res.redirect('/projects');
+});
+app.get('/projects', function(req, res){
+    res.render('projects', {
+        "css": "/home.css",
+        "projects": projects,
+        layout: 'layout'
+    });
+});
+var urlofquery;
+function checkExistence(req, res, next){
+    var base = path.basename(req.url);
+    if (base == "description") {
+        urlofquery = path.join(__dirname, path.dirname(req.url));
+        console.log(urlofquery);
+    } else {
+        urlofquery = path.join(projectsURL, base);
+    }
+    fs.exists(urlofquery, function(exists){
+        if (!exists) {
+            res.send("<p>Project Not Found</p>\
+            <a href='/projects'>Go back list of available projects.</a>");
+        } else {
+            next();
+        }
+    });
+}
+app.get('/projects/*/description', checkExistence, function(req, res){
+    var project = path.basename(urlofquery);
+    const description = require(urlofquery+'/description.json');
+    console.log(description);
+    res.render('projects', {
+        "css": "/description.css",
+        "projects": projects,
+        "description": description,
+        "screenshot": ('/'+project+'/screenshot.jpg'),
+        "projectHTML": ('/'+project+'/'+project+'.html'),
+        layout: 'layout'
+    });
 });
 
 app.listen(8080);

@@ -1,0 +1,11 @@
+<div id="projectsContainer">
+    <ul>
+        {{#each projects}}
+        <li id="individualProject">
+            <img id="thumbnail" src={{screenshot}}></img>
+            <div id="transparency"></div>
+            <a href="{{link}}" id="text">{{name}}</a>
+        </li>
+        {{/each}}
+    </ul>
+</div>

@@ -1,0 +1,15 @@
+<div id="bodyofDescription">
+    {{#each description}}
+        <h2>{{title}}</h2>
+    {{/each}}
+    <img id="screenshot" src="{{screenshot}}"></img>
+    {{#each description}}
+    <div id="values">
+        <p>Created: {{created}}</p>
+        <p>{{description}}</p>
+        <p>Tech Used: {{frameworks}}</p>
+        <p>This was the {{order}} project I created.</p?
+    </div>
+    {{/each}}
+    <div id="button"><button><a href="{{projectHTML}}" id="buttonText">Open this Project!</a></button></div>
+</div>
